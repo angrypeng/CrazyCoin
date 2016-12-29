@@ -22,6 +22,9 @@ public class csMyMove : MonoBehaviour {
 	Text txtOver;
 	Text txtTotalScore;
 
+	public GameObject coinEffect;
+	public GameObject ballEffect;
+
 	// Use this for initialization
 	void Start () {
 		controller = GetComponent<CharacterController> ();
@@ -31,11 +34,15 @@ public class csMyMove : MonoBehaviour {
 		txtScore = GameObject.Find ("txtScore").GetComponent<Text> ();
 		txtOver = GameObject.Find ("txtOver").GetComponent<Text> ();
 		txtTotalScore = GameObject.Find ("txtTotalScore").GetComponent<Text> ();
-
 	}
 
 	// Update is called once per frame
 	void Update () {
+		if (life <= 0) {
+			StopAllCoroutines ();
+			Time.timeScale = 0.0f;
+			GameOver ();
+		}
 		if (controller.isGrounded) {
 			if (Input.GetButtonUp ("Fire1")) {
 				moveTo = new Vector3 (0, 0, 0);
@@ -101,8 +108,7 @@ public class csMyMove : MonoBehaviour {
 				}
 			}
 		}
-
-
+			
 		velocity.y -= gravity * Time.deltaTime;
 
 		controller.Move (velocity * Time.deltaTime);
@@ -114,8 +120,35 @@ public class csMyMove : MonoBehaviour {
 		GetComponent<Animation> ().Play ("Idle");
 	}
 
+	void GameOver(){
+		txtScore.text = "";
+		txtLife.text = "";
+		txtOver.text = "Game Over";
+		txtTotalScore.text = "Total Score : " + score;
+	}
 
-	void OnCollisionEnter(Collision coll){
-		Debug.Log ("sibal");
+	void OnControllerColliderHit(ControllerColliderHit hit){
+		if (hit.collider.gameObject.tag == "Coin") {
+			//Debug.Log ("coin");
+			Destroy (hit.collider.gameObject);
+			score += 1;
+			txtScore.text = "Score : " + score;
+
+			//effect
+			GameObject tmp = Instantiate(coinEffect) as GameObject;
+			tmp.transform.position = this.transform.position;
+			Destroy (tmp, 1.0f);
+		}
+		else if(hit.collider.gameObject.tag == "SpikeBall"){
+			//Debug.Log ("ball");
+			Destroy (hit.collider.gameObject);
+			life -= 10;
+			txtLife.text = "Life : " + life;
+
+			//effect
+			GameObject tmp = Instantiate(ballEffect) as GameObject;
+			tmp.transform.position = this.transform.position;
+			Destroy (tmp, 1.0f);
+		}
 	}
 }
